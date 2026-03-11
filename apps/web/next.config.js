@@ -9,6 +9,20 @@ const config = {
 		"@strus/env",
 		"@strus/ui",
 	],
+	async redirects() {
+		return [
+			{
+				source: "/login",
+				destination: "/changes",
+				permanent: false,
+			},
+			{
+				source: "/dashboard",
+				destination: "/changes",
+				permanent: false,
+			},
+		];
+	},
 };
 
 export default config;
