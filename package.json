@@ -1,0 +1,26 @@
+{
+	"name": "strus",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"type": "module",
+	"scripts": {
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"check": "biome check --write .",
+		"check:ci": "biome check .",
+		"check-types": "turbo check-types",
+		"db:push": "turbo -F @strus/db db:push",
+		"db:studio": "turbo -F @strus/db db:studio",
+		"db:generate": "turbo -F @strus/db db:generate",
+		"db:migrate": "turbo -F @strus/db db:migrate"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.0",
+		"turbo": "^2.8.12",
+		"typescript": "^5"
+	},
+	"packageManager": "bun@1.3.10"
+}

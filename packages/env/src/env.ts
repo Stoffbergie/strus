@@ -1,0 +1,31 @@
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+	server: {
+		DATABASE_URL: z.string().url(),
+		WORKOS_API_KEY: z.string().min(1),
+		WORKOS_CLIENT_ID: z.string().min(1),
+		WORKOS_COOKIE_PASSWORD: z.string().min(32),
+		RESEND_API_KEY: z.string().min(1),
+		CONTACT_EMAIL: z.string().email().default("dirk@stoffberg.dev"),
+		NODE_ENV: z
+			.enum(["development", "test", "production"])
+			.default("development"),
+	},
+
+	client: {},
+
+	runtimeEnv: {
+		DATABASE_URL: process.env.DATABASE_URL,
+		WORKOS_API_KEY: process.env.WORKOS_API_KEY,
+		WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,
+		WORKOS_COOKIE_PASSWORD: process.env.WORKOS_COOKIE_PASSWORD,
+		RESEND_API_KEY: process.env.RESEND_API_KEY,
+		CONTACT_EMAIL: process.env.CONTACT_EMAIL,
+		NODE_ENV: process.env.NODE_ENV,
+	},
+
+	skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+	emptyStringAsUndefined: true,
+});
