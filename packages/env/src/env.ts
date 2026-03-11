@@ -14,13 +14,17 @@ export const env = createEnv({
 			.default("development"),
 	},
 
-	client: {},
+	client: {
+		NEXT_PUBLIC_WORKOS_REDIRECT_URI: z.string().url(),
+	},
 
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
 		WORKOS_API_KEY: process.env.WORKOS_API_KEY,
 		WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,
 		WORKOS_COOKIE_PASSWORD: process.env.WORKOS_COOKIE_PASSWORD,
+		NEXT_PUBLIC_WORKOS_REDIRECT_URI:
+			process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
 		RESEND_API_KEY: process.env.RESEND_API_KEY,
 		CONTACT_EMAIL: process.env.CONTACT_EMAIL,
 		NODE_ENV: process.env.NODE_ENV,
