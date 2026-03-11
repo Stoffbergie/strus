@@ -1,7 +1,16 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
-	"globalPassThroughEnv": ["NODE_ENV"],
+	"globalPassThroughEnv": [
+		"NODE_ENV",
+		"DATABASE_URL",
+		"WORKOS_API_KEY",
+		"WORKOS_CLIENT_ID",
+		"WORKOS_COOKIE_PASSWORD",
+		"RESEND_API_KEY",
+		"CONTACT_EMAIL",
+		"SKIP_ENV_VALIDATION"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
