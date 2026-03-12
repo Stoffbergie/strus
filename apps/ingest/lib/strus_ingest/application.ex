@@ -17,7 +17,7 @@ defmodule StrusIngest.Application do
         [
           {Postgrex, StrusIngest.Config.postgrex_opts()},
           StrusIngest.Buffer,
-          {Bandit, plug: StrusIngest.Router, port: port}
+          {Bandit, plug: StrusIngest.Router, port: port, ip: {0, 0, 0, 0}}
         ]
       end
 
