@@ -5,6 +5,8 @@ import { Toaster } from "@strus/ui/components/sonner";
 import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import type { Metadata } from "next";
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -43,11 +45,13 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang="en">
-			<body>
-				<AuthKitProvider>
-					<TRPCReactProvider>{children}</TRPCReactProvider>
-				</AuthKitProvider>
+		<html lang="en" className="overscroll-none">
+			<body className="overscroll-none">
+				<NuqsAdapter>
+					<AuthKitProvider>
+						<TRPCReactProvider>{children}</TRPCReactProvider>
+					</AuthKitProvider>
+				</NuqsAdapter>
 				<Toaster />
 			</body>
 		</html>

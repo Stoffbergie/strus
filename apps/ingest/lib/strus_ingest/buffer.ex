@@ -35,7 +35,11 @@ defmodule StrusIngest.Buffer do
 
   @impl true
   def handle_cast({:push, user_id, events}, state) do
-    entries = Enum.map(events, fn event -> {user_id, event} end)
+    entries =
+      events
+      |> Enum.flat_map(&StrusIngest.RouteNormalizer.normalize/1)
+      |> Enum.map(fn event -> {user_id, event} end)
+
     buffer = state.buffer ++ entries
     max = StrusIngest.Config.buffer_max_size()
 
@@ -167,7 +171,7 @@ defmodule StrusIngest.Buffer do
           maybe_json(event["q"]),
           event["k"],
           DateTime.utc_now(),
-          maybe_json(event["b"])
+          nil
         ]
 
         {params_acc ++ [placeholders], values_acc ++ row_values}

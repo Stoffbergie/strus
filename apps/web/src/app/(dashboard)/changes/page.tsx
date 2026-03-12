@@ -16,7 +16,7 @@ export default function ChangesPage() {
 
 	const { data: endpoints } = api.endpoints.list.useQuery();
 
-	const endpointCount = endpoints?.length ?? 0;
+	const endpointCount = endpoints?.items.length ?? 0;
 	const activeCount = shifts?.filter((s) => !s.resolvedAt).length ?? 0;
 
 	return (

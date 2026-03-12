@@ -94,6 +94,7 @@ export const telemetryRouter = createTRPCRouter({
 					id: telemetryEvent.id,
 					statusCode: telemetryEvent.statusCode,
 					durationMs: telemetryEvent.durationMs,
+					requestBody: telemetryEvent.requestBody,
 					responseBody: telemetryEvent.responseBody,
 					metadata: telemetryEvent.metadata,
 					receivedAt: telemetryEvent.receivedAt,

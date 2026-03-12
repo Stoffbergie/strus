@@ -2,9 +2,9 @@
 
 import { Button } from "@strus/ui/components/button";
 import { Input } from "@strus/ui/components/input";
+
 import { useVirtualizer } from "@tanstack/react-virtual";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { api } from "~/trpc/react";
@@ -22,6 +22,7 @@ type TelemetryEvent = {
 	id: string;
 	statusCode: number;
 	durationMs: number | null;
+	requestBody: unknown;
 	responseBody: unknown;
 	metadata: unknown;
 	receivedAt: Date;
@@ -56,6 +57,22 @@ function getStatusColor(code: number) {
 			return "text-[#dc2626]";
 		default:
 			return "text-[#999]";
+	}
+}
+
+function getStatusBg(code: number) {
+	const prefix = String(code)[0];
+	switch (prefix) {
+		case "2":
+			return "bg-[#d1fae5]";
+		case "3":
+			return "bg-[#dbeafe]";
+		case "4":
+			return "bg-[#fef3c7]";
+		case "5":
+			return "bg-[#fee2e2]";
+		default:
+			return "bg-[#f0f0f0]";
 	}
 }
 
@@ -313,47 +330,116 @@ function SignalPills({ signals }: { signals: Signal[] }) {
 	);
 }
 
-function MetadataSummary({ metadata }: { metadata: unknown }) {
-	if (!metadata || typeof metadata !== "object") return null;
+function compactPreview(data: unknown, maxLen = 80): string {
+	if (data === null || data === undefined) return "";
+	const raw = JSON.stringify(data);
+	if (raw.length <= maxLen) return raw;
+	return `${raw.slice(0, maxLen - 1)}…`;
+}
 
-	if (Array.isArray(metadata) && metadata.length > 0) {
-		return <SignalPills signals={metadata as Signal[]} />;
+function EventSummary({ event }: { event: TelemetryEvent }) {
+	if (event.metadata && typeof event.metadata === "object") {
+		if (Array.isArray(event.metadata) && event.metadata.length > 0) {
+			return <SignalPills signals={event.metadata as Signal[]} />;
+		}
+		const metaKeys = Object.keys(event.metadata as Record<string, unknown>);
+		const respKeys =
+			event.responseBody &&
+			typeof event.responseBody === "object" &&
+			!Array.isArray(event.responseBody)
+				? Object.keys(event.responseBody as Record<string, unknown>)
+				: [];
+		const isDuplicate =
+			metaKeys.length > 0 &&
+			metaKeys.length === respKeys.length &&
+			metaKeys.every((k) => respKeys.includes(k));
+
+		if (metaKeys.length > 0 && !isDuplicate) {
+			return (
+				<span className="text-[#999]">{compactPreview(event.metadata)}</span>
+			);
+		}
 	}
 
-	const keys = Object.keys(metadata as Record<string, unknown>);
-	if (keys.length === 0) return null;
+	if (event.responseBody !== null && event.responseBody !== undefined) {
+		return (
+			<span className="text-[#999]">{compactPreview(event.responseBody)}</span>
+		);
+	}
+
+	if (event.requestBody !== null && event.requestBody !== undefined) {
+		return (
+			<span className="text-[#ccc]">{compactPreview(event.requestBody)}</span>
+		);
+	}
+
+	return null;
+}
+
+function formatTime(date: Date): string {
+	const d = new Date(date);
+	return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+}
+
+function formatDateTime(date: Date): string {
+	const d = new Date(date);
+	const mon = d.toLocaleString("en", { month: "short" });
+	const day = d.getDate();
+	const hh = String(d.getHours()).padStart(2, "0");
+	const mm = String(d.getMinutes()).padStart(2, "0");
+	const ss = String(d.getSeconds()).padStart(2, "0");
+	return `${mon} ${day}, ${hh}:${mm}:${ss}`;
+}
+
+function JsonField({
+	name,
+	value,
+	isLast,
+}: {
+	name: string;
+	value: unknown;
+	isLast: boolean;
+}) {
+	const rendered = renderJsonValue(value);
 
 	return (
-		<span className="text-[#ccc]">
-			{keys.slice(0, 3).join(", ")}
-			{keys.length > 3 && ` +${keys.length - 3}`}
-		</span>
+		<div className="ml-4">
+			<span className="text-[#111]">"{name}"</span>
+			<span className="text-[#999]">: </span>
+			{rendered}
+			{!isLast && <span className="text-[#ddd]">,</span>}
+		</div>
 	);
 }
 
-function JsonTree({ data, depth = 0 }: { data: unknown; depth?: number }) {
-	if (data === null || data === undefined) {
+function renderJsonValue(value: unknown): React.ReactNode {
+	if (value === null || value === undefined) {
 		return <span className="text-[#999]">null</span>;
 	}
 
-	if (typeof data === "string") {
-		return <span className="text-[#22863a]">&quot;{data}&quot;</span>;
+	if (typeof value === "string") {
+		const truncated = value.length > 60 ? `${value.slice(0, 57)}...` : value;
+		return <span className="text-[#22863a]">"{truncated}"</span>;
 	}
 
-	if (typeof data === "number" || typeof data === "boolean") {
-		return <span className="text-[#005cc5]">{String(data)}</span>;
+	if (typeof value === "number") {
+		return <span className="text-[#005cc5]">{value}</span>;
 	}
 
-	if (Array.isArray(data)) {
-		if (data.length === 0) return <span className="text-[#999]">[]</span>;
+	if (typeof value === "boolean") {
+		return <span className="text-[#005cc5]">{String(value)}</span>;
+	}
+
+	if (Array.isArray(value)) {
+		if (value.length === 0) return <span className="text-[#999]">[]</span>;
 		return (
 			<span>
 				<span className="text-[#999]">[</span>
-				<div className="pl-3">
-					{data.map((item, i) => (
+				<div className="ml-4">
+					{value.map((item, i) => (
 						<div key={i}>
-							<JsonTree data={item} depth={depth + 1} />
-							{i < data.length - 1 && <span className="text-[#999]">,</span>}
+							{renderJsonValue(item)}
+							{i < value.length - 1 && <span className="text-[#ddd]">,</span>}
 						</div>
 					))}
 				</div>
@@ -362,44 +448,199 @@ function JsonTree({ data, depth = 0 }: { data: unknown; depth?: number }) {
 		);
 	}
 
-	if (typeof data === "object") {
-		const entries = Object.entries(data as Record<string, unknown>);
+	if (typeof value === "object") {
+		const entries = Object.entries(value as Record<string, unknown>);
 		if (entries.length === 0) {
 			return <span className="text-[#999]">{"{}"}</span>;
 		}
 		return (
 			<span>
 				<span className="text-[#999]">{"{"}</span>
-				<div className="pl-3">
-					{entries.map(([key, val], i) => (
-						<div key={key}>
-							<span className="text-[#6f42c1]">&quot;{key}&quot;</span>
-							<span className="text-[#999]">: </span>
-							<JsonTree data={val} depth={depth + 1} />
-							{i < entries.length - 1 && <span className="text-[#999]">,</span>}
-						</div>
-					))}
-				</div>
+				{entries.map(([key, val], i) => (
+					<JsonField
+						key={key}
+						name={key}
+						value={val}
+						isLast={i === entries.length - 1}
+					/>
+				))}
 				<span className="text-[#999]">{"}"}</span>
 			</span>
 		);
 	}
 
-	return <span>{String(data)}</span>;
+	return <span>{String(value)}</span>;
 }
 
-function hasExpandableContent(event: TelemetryEvent): boolean {
-	if (event.responseBody !== null && event.responseBody !== undefined)
-		return true;
-	const m = event.metadata;
-	if (!m || typeof m !== "object") return false;
-	if (Array.isArray(m)) return m.length > 0;
-	return Object.keys(m as Record<string, unknown>).length > 0;
+function PayloadPanel({ label, data }: { label: string; data: unknown }) {
+	if (data === null || data === undefined) return null;
+
+	const isObject = typeof data === "object" && !Array.isArray(data);
+	const entries = isObject
+		? Object.entries(data as Record<string, unknown>)
+		: null;
+
+	return (
+		<div className="overflow-hidden rounded-lg border border-[#e8e8e8] bg-[#fafafa]">
+			<div className="border-[#e8e8e8] border-b px-4 py-2">
+				<span className="font-semibold text-[#999] text-[10px] uppercase tracking-wider">
+					{label}
+				</span>
+			</div>
+			<div className="overflow-x-auto p-4 font-mono text-[11px] leading-relaxed">
+				{entries ? (
+					<>
+						<div className="text-[#999]">{"{"}</div>
+						{entries.map(([key, val], i) => (
+							<JsonField
+								key={key}
+								name={key}
+								value={val}
+								isLast={i === entries.length - 1}
+							/>
+						))}
+						<div className="text-[#999]">{"}"}</div>
+					</>
+				) : (
+					<div>{renderJsonValue(data)}</div>
+				)}
+			</div>
+		</div>
+	);
 }
 
-function formatTime(date: Date): string {
-	const d = new Date(date);
-	return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+function DurationBar({
+	durationMs,
+	maxMs,
+}: {
+	durationMs: number;
+	maxMs: number;
+}) {
+	const pct = Math.min((durationMs / maxMs) * 100, 100);
+	const slow = durationMs > 500;
+	return (
+		<div className="flex items-center gap-2">
+			<div className="h-1.5 w-full max-w-32 overflow-hidden rounded-full bg-[#f0f0f0]">
+				<div
+					className={`h-full rounded-full ${slow ? "bg-[#f59e0b]" : "bg-[#111]"}`}
+					style={{ width: `${Math.max(pct, 2)}%` }}
+				/>
+			</div>
+			<span
+				className={`font-mono text-[12px] tabular-nums ${slow ? "text-[#92400e]" : "text-[#999]"}`}
+			>
+				{durationMs}ms
+			</span>
+		</div>
+	);
+}
+
+function EventSidePanel({
+	event,
+	method,
+	route,
+	maxDuration,
+	onClose,
+}: {
+	event: TelemetryEvent;
+	method: string;
+	route: string;
+	maxDuration: number;
+	onClose: () => void;
+}) {
+	const hasRequest =
+		event.requestBody !== null && event.requestBody !== undefined;
+	const hasResponse =
+		event.responseBody !== null && event.responseBody !== undefined;
+	const metadataIsDuplicate =
+		hasResponse &&
+		event.metadata !== null &&
+		event.metadata !== undefined &&
+		JSON.stringify(event.metadata) === JSON.stringify(event.responseBody);
+	const hasMetadata =
+		!metadataIsDuplicate &&
+		event.metadata !== null &&
+		event.metadata !== undefined &&
+		typeof event.metadata === "object" &&
+		(Array.isArray(event.metadata)
+			? event.metadata.length > 0
+			: Object.keys(event.metadata as Record<string, unknown>).length > 0);
+	const hasPayload = hasRequest || hasResponse || hasMetadata;
+
+	return (
+		<div className="fixed inset-y-0 right-0 z-40 flex w-[320px] flex-col border-[#e8e8e8] border-l bg-white shadow-lg lg:w-[360px]">
+			<div className="flex items-center justify-between border-[#e8e8e8] border-b px-5 py-3">
+				<div className="flex min-w-0 items-center gap-2">
+					<span
+						className={`shrink-0 rounded px-1.5 py-0.5 font-semibold text-[10px] uppercase ${getStatusBg(event.statusCode)} ${getStatusColor(event.statusCode)}`}
+					>
+						{event.statusCode}
+					</span>
+					<span className="truncate font-mono text-[#111] text-[13px]">
+						{method} {route}
+					</span>
+				</div>
+				<button
+					type="button"
+					onClick={onClose}
+					className="shrink-0 rounded p-1.5 text-[#bbb] transition-colors hover:bg-[#f0f0f0] hover:text-[#666]"
+				>
+					<svg
+						width="14"
+						height="14"
+						viewBox="0 0 14 14"
+						fill="none"
+						role="img"
+						aria-label="Close panel"
+					>
+						<path
+							d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+						/>
+					</svg>
+				</button>
+			</div>
+
+			<div className="flex-1 overflow-y-auto">
+				<div className="flex flex-col gap-4 p-5">
+					<div className="font-mono text-[#999] text-[12px]">
+						{formatDateTime(event.receivedAt)}
+					</div>
+
+					{event.durationMs !== null && (
+						<div>
+							<div className="mb-1.5 font-semibold text-[#bbb] text-[10px] uppercase tracking-wider">
+								Execution time
+							</div>
+							<DurationBar durationMs={event.durationMs} maxMs={maxDuration} />
+						</div>
+					)}
+
+					{hasRequest && (
+						<PayloadPanel label="Request" data={event.requestBody} />
+					)}
+
+					{hasResponse && (
+						<PayloadPanel label="Response" data={event.responseBody} />
+					)}
+
+					{hasMetadata && (
+						<PayloadPanel label="Metadata" data={event.metadata} />
+					)}
+
+					{!hasPayload && event.durationMs === null && (
+						<div className="rounded-lg border border-[#e8e8e8] bg-[#fafafa] px-4 py-8 text-center">
+							<p className="text-[#ccc] text-[13px]">
+								No payload data recorded for this event.
+							</p>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }
 
 function VirtualizedEventLog({
@@ -407,39 +648,24 @@ function VirtualizedEventLog({
 	hasNextPage,
 	isFetchingNextPage,
 	fetchNextPage,
+	selectedId,
+	onSelect,
 }: {
 	events: TelemetryEvent[];
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	fetchNextPage: () => void;
+	selectedId: string | null;
+	onSelect: (event: TelemetryEvent) => void;
 }) {
 	const parentRef = useRef<HTMLDivElement>(null);
-	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
-	const toggleExpanded = useCallback((id: string, canExpand: boolean) => {
-		if (!canExpand) return;
-		setExpandedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	}, []);
 
 	const virtualizer = useVirtualizer({
 		count: events.length,
 		getScrollElement: () => parentRef.current,
-		estimateSize: (i) => {
-			const event = events[i];
-			if (!event) return 28;
-			return expandedIds.has(event.id) ? 160 : 28;
-		},
+		estimateSize: () => 28,
 		overscan: 20,
 	});
-
-	useEffect(() => {
-		virtualizer.measure();
-	}, [expandedIds, virtualizer]);
 
 	const virtualItems = virtualizer.getVirtualItems();
 	const lastItem = virtualItems[virtualItems.length - 1];
@@ -465,8 +691,7 @@ function VirtualizedEventLog({
 				{virtualItems.map((virtualRow) => {
 					const event = events[virtualRow.index];
 					if (!event) return null;
-					const expanded = expandedIds.has(event.id);
-					const canExpand = hasExpandableContent(event);
+					const isSelected = event.id === selectedId;
 
 					return (
 						<div
@@ -480,12 +705,12 @@ function VirtualizedEventLog({
 						>
 							<button
 								type="button"
-								onClick={() => toggleExpanded(event.id, canExpand)}
-								className={`group/row flex w-full items-center border-[#f0f0f0] border-b text-left font-mono leading-none transition-colors ${
-									canExpand
-										? "cursor-pointer hover:bg-[#fafafa]"
-										: "cursor-default"
-								} ${expanded ? "bg-[#fafafa]" : ""}`}
+								onClick={() => onSelect(event)}
+								className={`group/row flex w-full items-center border-[#f0f0f0] border-b px-2 text-left font-mono leading-none transition-colors ${
+									isSelected
+										? "bg-[#f0f4ff]"
+										: "cursor-pointer hover:bg-[#fafafa]"
+								}`}
 							>
 								<span className="w-[68px] shrink-0 py-[6px] pr-3 text-right text-[#ccc] text-[11px]">
 									{formatTime(event.receivedAt)}
@@ -495,35 +720,37 @@ function VirtualizedEventLog({
 								>
 									{event.statusCode}
 								</span>
-								{event.durationMs !== null && (
-									<span className="w-[52px] shrink-0 py-[6px] pr-2 text-right text-[#ccc] text-[10px]">
-										{event.durationMs}ms
-									</span>
-								)}
-								<span className="min-w-0 flex-1 truncate py-[6px] pl-3 text-[11px]">
-									<MetadataSummary metadata={event.metadata} />
+								<span className="w-[60px] shrink-0 py-[6px] pr-2 pl-2 text-right text-[10px]">
+									{event.durationMs === null ? (
+										<span className="text-[#e8e8e8]">&mdash;</span>
+									) : event.durationMs === 0 ? (
+										<span className="inline-flex items-center gap-0.5 text-[#ccc]">
+											<svg
+												width="10"
+												height="10"
+												viewBox="0 0 16 16"
+												fill="none"
+												role="img"
+												aria-label="Instant"
+											>
+												<path
+													d="M8.5 1L3 9.5H7.5L7 15L13 6.5H8.5L8.5 1Z"
+													fill="currentColor"
+												/>
+											</svg>
+											instant
+										</span>
+									) : (
+										<span className="text-[#ccc]">{event.durationMs}ms</span>
+									)}
 								</span>
-								{canExpand && (
-									<span className="hidden shrink-0 px-2 py-[6px] text-[#ccc] text-[9px] group-hover/row:inline">
-										{expanded ? "▲" : "▼"}
-									</span>
-								)}
+								<span className="min-w-0 flex-1 truncate py-[6px] pl-5 text-[11px]">
+									<EventSummary event={event} />
+								</span>
+								<span className="hidden shrink-0 px-2 py-[6px] text-[#ccc] text-[9px] group-hover/row:inline">
+									→
+								</span>
 							</button>
-							{expanded && canExpand && (
-								<div className="border-[#f0f0f0] border-b bg-[#fafafa] py-3 pr-4 pl-[100px]">
-									{event.responseBody !== null &&
-										event.responseBody !== undefined && (
-											<div>
-												<div className="mb-1 font-sans text-[#bbb] text-[9px] uppercase tracking-wider">
-													Response
-												</div>
-												<pre className="overflow-x-auto font-mono text-[11px] leading-relaxed">
-													<JsonTree data={event.responseBody} />
-												</pre>
-											</div>
-										)}
-								</div>
-							)}
 						</div>
 					);
 				})}
@@ -538,11 +765,15 @@ function VirtualizedEventLog({
 }
 
 export default function MonitoringDetailPage() {
+	const router = useRouter();
 	const { id } = useParams<{ id: string }>();
 	const [timeRange, setTimeRange] = useState<TimeRange>("24h");
 	const [statusCode, setStatusCode] = useState<number | undefined>();
 	const [jsonFilters, setJsonFilters] = useState<JsonFilter[]>([]);
 	const [showFilters, setShowFilters] = useState(false);
+	const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(
+		null,
+	);
 
 	const { data: ep, isLoading: epLoading } = api.endpoints.get.useQuery({
 		id,
@@ -582,6 +813,11 @@ export default function MonitoringDetailPage() {
 	const allEvents = useMemo(
 		() => eventsData?.pages.flatMap((p) => p.events) ?? [],
 		[eventsData],
+	);
+
+	const maxDuration = useMemo(
+		() => Math.max(...allEvents.map((e) => e.durationMs ?? 0), 100),
+		[allEvents],
 	);
 
 	const addJsonFilter = useCallback((filter: JsonFilter) => {
@@ -627,14 +863,14 @@ export default function MonitoringDetailPage() {
 
 	return (
 		<div>
-			{/* Header */}
 			<div className="mb-6">
-				<Link
-					href="/monitoring"
-					className="text-[#bbb] text-[12px] no-underline transition-colors hover:text-[#999]"
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="text-[#bbb] text-[12px] transition-colors hover:text-[#999]"
 				>
 					← monitoring
-				</Link>
+				</button>
 				<div className="mt-3 flex items-baseline gap-3">
 					<span
 						className={`rounded px-1.5 py-0.5 font-semibold text-[10px] uppercase ${METHOD_COLORS[ep.method] || "bg-[#fafafa] text-[#666]"}`}
@@ -650,7 +886,6 @@ export default function MonitoringDetailPage() {
 				</div>
 			</div>
 
-			{/* Controls row */}
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-3">
 					<div className="flex rounded-md border border-[#e8e8e8]">
@@ -731,7 +966,6 @@ export default function MonitoringDetailPage() {
 				</div>
 			</div>
 
-			{/* Histogram */}
 			<div className="mt-3">
 				<Histogram
 					buckets={histogramData?.buckets ?? []}
@@ -739,7 +973,6 @@ export default function MonitoringDetailPage() {
 				/>
 			</div>
 
-			{/* JSON Filters (collapsible) */}
 			{showFilters && (
 				<div className="mt-3">
 					<JsonFilterBar
@@ -750,7 +983,6 @@ export default function MonitoringDetailPage() {
 				</div>
 			)}
 
-			{/* Event log */}
 			<div className="mt-4">
 				{eventsLoading ? (
 					<div className="overflow-hidden rounded-lg border border-[#e8e8e8]">
@@ -777,9 +1009,21 @@ export default function MonitoringDetailPage() {
 						hasNextPage={hasNextPage ?? false}
 						isFetchingNextPage={isFetchingNextPage}
 						fetchNextPage={triggerNextPage}
+						selectedId={selectedEvent?.id ?? null}
+						onSelect={setSelectedEvent}
 					/>
 				)}
 			</div>
+
+			{selectedEvent && (
+				<EventSidePanel
+					event={selectedEvent}
+					method={ep.method}
+					route={ep.routePattern}
+					maxDuration={maxDuration}
+					onClose={() => setSelectedEvent(null)}
+				/>
+			)}
 		</div>
 	);
 }

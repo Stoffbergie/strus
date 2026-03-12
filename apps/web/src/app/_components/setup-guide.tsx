@@ -417,7 +417,7 @@ export default function SetupGuide() {
 	const highlighter = useHighlighter();
 
 	const hasKey = (apiKeys?.length ?? 0) > 0;
-	const hasEvents = (endpoints?.length ?? 0) > 0;
+	const hasEvents = (endpoints?.items.length ?? 0) > 0;
 	const latestKey = apiKeys?.[0];
 
 	const sessionKey = useRef<string | null>(null);

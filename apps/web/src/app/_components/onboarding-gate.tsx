@@ -14,7 +14,7 @@ export default function OnboardingGate({
 	const { data: endpoints, isLoading: endpointsLoading } =
 		api.endpoints.list.useQuery();
 
-	const hasEvents = (endpoints?.length ?? 0) > 0;
+	const hasEvents = (endpoints?.items.length ?? 0) > 0;
 
 	if (endpointsLoading) {
 		return (
