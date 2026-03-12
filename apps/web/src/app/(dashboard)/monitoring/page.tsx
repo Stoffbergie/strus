@@ -1,7 +1,7 @@
 "use client";
 
 import { createColumnHelper } from "@tanstack/react-table";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DataTable, DataTableSkeleton } from "~/components/data-table";
 import { api, type RouterOutputs } from "~/trpc/react";
 
@@ -34,12 +34,9 @@ const columns = [
 	col.accessor("routePattern", {
 		header: "Route",
 		cell: (info) => (
-			<Link
-				href={`/monitoring/${info.row.original.id}`}
-				className="font-mono text-[#111] text-[13px] no-underline transition-colors hover:text-[#666]"
-			>
+			<span className="font-mono text-[#111] text-[13px]">
 				{info.getValue()}
-			</Link>
+			</span>
 		),
 	}),
 	col.accessor("eventCount", {
@@ -63,6 +60,7 @@ const columns = [
 ];
 
 export default function MonitoringPage() {
+	const router = useRouter();
 	const { data: endpoints, isLoading } = api.endpoints.list.useQuery();
 
 	return (
@@ -79,7 +77,11 @@ export default function MonitoringPage() {
 			{isLoading ? (
 				<DataTableSkeleton columns={columns} rows={5} />
 			) : (
-				<DataTable columns={columns} data={endpoints ?? []} />
+				<DataTable
+					columns={columns}
+					data={endpoints ?? []}
+					onRowClick={(row) => router.push(`/monitoring/${row.id}`)}
+				/>
 			)}
 		</div>
 	);

@@ -4,6 +4,7 @@ import { baselinesRouter } from "./routers/baselines";
 import { contactRouter } from "./routers/contact";
 import { endpointsRouter } from "./routers/endpoints";
 import { shiftsRouter } from "./routers/shifts";
+import { telemetryRouter } from "./routers/telemetry";
 
 export const appRouter = createTRPCRouter({
 	apiKeys: apiKeysRouter,
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
 	contact: contactRouter,
 	endpoints: endpointsRouter,
 	shifts: shiftsRouter,
+	telemetry: telemetryRouter,
 });
 
 export type AppRouter = typeof appRouter;

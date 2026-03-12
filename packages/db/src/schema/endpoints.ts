@@ -1,5 +1,5 @@
 import { integer, text, timestamp } from "drizzle-orm/pg-core";
-import { pgIndex, pgTable } from "./helpers";
+import { pgIndex, pgTable, pgUniqueIndex } from "./helpers";
 
 export const endpoint = pgTable(
 	"endpoint",
@@ -14,7 +14,7 @@ export const endpoint = pgTable(
 	},
 	(table) => [
 		pgIndex("endpoint_userId_idx").on(table.userId),
-		pgIndex("endpoint_userId_method_route_idx").on(
+		pgUniqueIndex("endpoint_userId_method_route_idx").on(
 			table.userId,
 			table.method,
 			table.routePattern,

@@ -1,13 +1,15 @@
 import { db } from "@strus/db";
 import { apiKey, endpoint, telemetryEvent } from "@strus/db/schema/index";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { wrapHandler } from "~/server/strus";
 
 const eventSchema = z.object({
 	endpointId: z.string(),
 	statusCode: z.number().int(),
+	durationMs: z.number().int().nonnegative().nullish(),
+	responseBody: z.unknown().optional(),
 	metadata: z.unknown(),
 	idempotencyKey: z.string().optional(),
 });
@@ -22,6 +24,14 @@ async function hashKey(raw: string): Promise<string> {
 	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function parseEndpointId(endpointId: string) {
+	const spaceIdx = endpointId.indexOf(" ");
+	const method = spaceIdx > 0 ? endpointId.slice(0, spaceIdx) : "UNKNOWN";
+	const routePattern =
+		spaceIdx > 0 ? endpointId.slice(spaceIdx + 1) : endpointId;
+	return { method, routePattern };
 }
 
 export const POST = wrapHandler(async (req) => {
@@ -67,20 +77,18 @@ export const POST = wrapHandler(async (req) => {
 		if (existing) {
 			existing.count++;
 		} else {
-			const spaceIdx = event.endpointId.indexOf(" ");
-			const method =
-				spaceIdx > 0 ? event.endpointId.slice(0, spaceIdx) : "UNKNOWN";
-			const routePattern =
-				spaceIdx > 0 ? event.endpointId.slice(spaceIdx + 1) : event.endpointId;
+			const { method, routePattern } = parseEndpointId(event.endpointId);
 			endpointUpdates.set(event.endpointId, { method, routePattern, count: 1 });
 		}
 	}
 
-	for (const [endpointId, info] of endpointUpdates) {
-		await db
+	const endpointIdMap = new Map<string, string>();
+
+	for (const [rawEndpointId, info] of endpointUpdates) {
+		const [row] = await db
 			.insert(endpoint)
 			.values({
-				id: endpointId,
+				id: crypto.randomUUID(),
 				userId,
 				method: info.method,
 				routePattern: info.routePattern,
@@ -88,28 +96,43 @@ export const POST = wrapHandler(async (req) => {
 				eventCount: info.count,
 			})
 			.onConflictDoUpdate({
-				target: endpoint.id,
+				target: [endpoint.userId, endpoint.method, endpoint.routePattern],
 				set: {
 					lastSeenAt: new Date(),
 					eventCount: sql`${endpoint.eventCount} + ${info.count}`,
 				},
-			});
+			})
+			.returning({ id: endpoint.id });
+
+		if (row) {
+			endpointIdMap.set(rawEndpointId, row.id);
+		}
 	}
 
-	const rows = events.map((event) => ({
-		id: crypto.randomUUID(),
-		endpointId: event.endpointId,
-		userId,
-		statusCode: event.statusCode,
-		metadata: event.metadata,
-		idempotencyKey: event.idempotencyKey ?? null,
-		receivedAt: new Date(),
-	}));
+	const rows = events
+		.map((event) => {
+			const resolvedId = endpointIdMap.get(event.endpointId);
+			if (!resolvedId) return null;
+			return {
+				id: crypto.randomUUID(),
+				endpointId: resolvedId,
+				userId,
+				statusCode: event.statusCode,
+				durationMs: event.durationMs ?? null,
+				responseBody: event.responseBody ?? null,
+				metadata: event.metadata,
+				idempotencyKey: event.idempotencyKey ?? null,
+				receivedAt: new Date(),
+			};
+		})
+		.filter((r) => r !== null);
 
-	await db
-		.insert(telemetryEvent)
-		.values(rows)
-		.onConflictDoNothing({ target: telemetryEvent.idempotencyKey });
+	if (rows.length > 0) {
+		await db
+			.insert(telemetryEvent)
+			.values(rows)
+			.onConflictDoNothing({ target: telemetryEvent.idempotencyKey });
+	}
 
 	return NextResponse.json({ ingested: rows.length });
 });

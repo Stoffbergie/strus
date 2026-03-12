@@ -12,6 +12,8 @@ export const telemetryEvent = pgTable(
 			.references(() => endpoint.id, { onDelete: "cascade" }),
 		userId: text("user_id").notNull(),
 		statusCode: integer("status_code").notNull(),
+		durationMs: integer("duration_ms"),
+		responseBody: jsonb("response_body"),
 		metadata: jsonb("metadata").notNull(),
 		idempotencyKey: text("idempotency_key").unique(),
 		receivedAt: timestamp("received_at").defaultNow().notNull(),
