@@ -25,11 +25,13 @@ async function hashKey(raw: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
 	const authHeader = req.headers.get("authorization");
-	if (!authHeader?.startsWith("Bearer ")) {
+	const rawKey = authHeader?.startsWith("Bearer ")
+		? authHeader.slice(7)
+		: req.headers.get("x-api-key");
+
+	if (!rawKey) {
 		return NextResponse.json({ error: "Missing API key" }, { status: 401 });
 	}
-
-	const rawKey = authHeader.slice(7);
 	const keyHash = await hashKey(rawKey);
 
 	const [keyRow] = await db
