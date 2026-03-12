@@ -11,6 +11,14 @@ export const metadata: Metadata = {
 	title: "Strus | Behavioral monitoring for regulated software",
 	description:
 		"Strus learns how your system behaves and alerts when something shifts. API responses, data quality, UI behavior. PHI free. Open source. Built for healthcare and finance.",
+	icons: {
+		icon: [
+			{ url: "/favicon.ico", sizes: "32x32" },
+			{ url: "/favicon.svg", type: "image/svg+xml" },
+		],
+		apple: "/apple-touch-icon.png",
+	},
+	manifest: "/site.webmanifest",
 	openGraph: {
 		type: "website",
 		url: "https://strus.io",

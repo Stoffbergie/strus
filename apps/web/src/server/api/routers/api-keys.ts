@@ -1,5 +1,5 @@
 import { apiKey } from "@strus/db/schema/index";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -12,7 +12,6 @@ export const apiKeysRouter = createTRPCRouter({
 				keyPrefix: apiKey.keyPrefix,
 				name: apiKey.name,
 				createdAt: apiKey.createdAt,
-				revokedAt: apiKey.revokedAt,
 			})
 			.from(apiKey)
 			.where(eq(apiKey.userId, ctx.userId));
@@ -42,19 +41,12 @@ export const apiKeysRouter = createTRPCRouter({
 			return { key: rawKey, prefix };
 		}),
 
-	revoke: protectedProcedure
+	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db
-				.update(apiKey)
-				.set({ revokedAt: new Date() })
-				.where(
-					and(
-						eq(apiKey.id, input.id),
-						eq(apiKey.userId, ctx.userId),
-						isNull(apiKey.revokedAt),
-					),
-				);
+				.delete(apiKey)
+				.where(and(eq(apiKey.id, input.id), eq(apiKey.userId, ctx.userId)));
 
 			return { success: true };
 		}),

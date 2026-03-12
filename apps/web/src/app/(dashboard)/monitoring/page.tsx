@@ -1,9 +1,11 @@
 "use client";
 
+import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
+import { DataTable, DataTableSkeleton } from "~/components/data-table";
+import { api, type RouterOutputs } from "~/trpc/react";
 
-import SetupGuide from "~/app/_components/setup-guide";
-import { api } from "~/trpc/react";
+type Endpoint = RouterOutputs["endpoints"]["list"][number];
 
 const METHOD_COLORS: Record<string, string> = {
 	GET: "bg-[#dbeafe] text-[#1e40af]",
@@ -12,6 +14,53 @@ const METHOD_COLORS: Record<string, string> = {
 	PATCH: "bg-[#fed7aa] text-[#9a3412]",
 	DELETE: "bg-[#fee2e2] text-[#991b1b]",
 };
+
+const col = createColumnHelper<Endpoint>();
+
+const columns = [
+	col.accessor("method", {
+		header: "Method",
+		cell: (info) => {
+			const method = info.getValue();
+			return (
+				<span
+					className={`inline-flex rounded px-1.5 py-0.5 font-semibold text-[10px] uppercase ${METHOD_COLORS[method] ?? "bg-[#fafafa] text-[#666]"}`}
+				>
+					{method}
+				</span>
+			);
+		},
+	}),
+	col.accessor("routePattern", {
+		header: "Route",
+		cell: (info) => (
+			<Link
+				href={`/monitoring/${info.row.original.id}`}
+				className="font-mono text-[#111] text-[13px] no-underline transition-colors hover:text-[#666]"
+			>
+				{info.getValue()}
+			</Link>
+		),
+	}),
+	col.accessor("eventCount", {
+		header: "Events",
+		meta: { align: "right" },
+		cell: (info) => (
+			<span className="font-mono text-[#999] tabular-nums">
+				{info.getValue().toLocaleString()}
+			</span>
+		),
+	}),
+	col.accessor("lastSeenAt", {
+		header: "Last seen",
+		meta: { align: "right" },
+		cell: (info) => (
+			<span className="font-mono text-[#bbb] text-[12px]">
+				{new Date(info.getValue()).toLocaleDateString()}
+			</span>
+		),
+	}),
+];
 
 export default function MonitoringPage() {
 	const { data: endpoints, isLoading } = api.endpoints.list.useQuery();
@@ -28,68 +77,10 @@ export default function MonitoringPage() {
 			</div>
 
 			{isLoading ? (
-				<div className="space-y-3">
-					{[1, 2, 3, 4, 5].map((i) => (
-						<div
-							key={i}
-							className="h-14 animate-pulse rounded-xl bg-[#fafafa]"
-						/>
-					))}
-				</div>
-			) : !isLoading && endpoints && endpoints.length === 0 ? (
-				<SetupGuide />
-			) : endpoints && endpoints.length > 0 ? (
-				<div className="overflow-hidden rounded-xl border border-[#e8e8e8]">
-					<table className="w-full text-left">
-						<thead>
-							<tr className="border-[#e8e8e8] border-b bg-[#fafafa]">
-								<th className="px-5 py-3 font-semibold text-[#bbb] text-[11px] uppercase tracking-[0.15em]">
-									Method
-								</th>
-								<th className="px-5 py-3 font-semibold text-[#bbb] text-[11px] uppercase tracking-[0.15em]">
-									Route
-								</th>
-								<th className="px-5 py-3 text-right font-semibold text-[#bbb] text-[11px] uppercase tracking-[0.15em]">
-									Events
-								</th>
-								<th className="px-5 py-3 text-right font-semibold text-[#bbb] text-[11px] uppercase tracking-[0.15em]">
-									Last seen
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-[#f0f0f0]">
-							{endpoints.map((ep) => (
-								<tr
-									key={ep.id}
-									className="transition-colors hover:bg-[#fafafa]"
-								>
-									<td className="px-5 py-3">
-										<span
-											className={`inline-flex rounded px-1.5 py-0.5 font-semibold text-[10px] uppercase ${METHOD_COLORS[ep.method] || "bg-[#fafafa] text-[#666]"}`}
-										>
-											{ep.method}
-										</span>
-									</td>
-									<td className="px-5 py-3">
-										<Link
-											href={`/monitoring/${ep.id}`}
-											className="font-mono text-[#111] text-[13px] no-underline transition-colors hover:text-[#666]"
-										>
-											{ep.routePattern}
-										</Link>
-									</td>
-									<td className="px-5 py-3 text-right font-mono text-[#999] text-[13px] tabular-nums">
-										{ep.eventCount.toLocaleString()}
-									</td>
-									<td className="px-5 py-3 text-right font-mono text-[#bbb] text-[12px]">
-										{new Date(ep.lastSeenAt).toLocaleDateString()}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			) : null}
+				<DataTableSkeleton columns={columns} rows={5} />
+			) : (
+				<DataTable columns={columns} data={endpoints ?? []} />
+			)}
 		</div>
 	);
 }

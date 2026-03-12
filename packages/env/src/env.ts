@@ -8,6 +8,7 @@ export const env = createEnv({
 		WORKOS_CLIENT_ID: z.string().min(1),
 		WORKOS_COOKIE_PASSWORD: z.string().min(32),
 		RESEND_API_KEY: z.string().min(1),
+		STRUS_API_KEY: z.string().min(1).optional(),
 		CONTACT_EMAIL: z.string().email().default("dirk@stoffberg.dev"),
 		NODE_ENV: z
 			.enum(["development", "test", "production"])
@@ -26,6 +27,7 @@ export const env = createEnv({
 		NEXT_PUBLIC_WORKOS_REDIRECT_URI:
 			process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
 		RESEND_API_KEY: process.env.RESEND_API_KEY,
+		STRUS_API_KEY: process.env.STRUS_API_KEY,
 		CONTACT_EMAIL: process.env.CONTACT_EMAIL,
 		NODE_ENV: process.env.NODE_ENV,
 	},

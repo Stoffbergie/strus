@@ -81,7 +81,7 @@ export default function ChangeDetailPage() {
 					<div className="mb-3 font-semibold text-[#bbb] text-[11px] uppercase tracking-[0.15em]">
 						Baseline
 					</div>
-					<pre className="overflow-auto rounded-lg bg-white p-4 font-mono text-[#111] text-[12px] leading-relaxed ring-1 ring-[#e8e8e8]">
+					<pre className="overflow-auto rounded-lg bg-white p-6 font-mono text-[#111] text-[12px] leading-relaxed ring-1 ring-[#e8e8e8]">
 						{JSON.stringify(shift.baselineValue, null, 2)}
 					</pre>
 				</div>
@@ -89,7 +89,7 @@ export default function ChangeDetailPage() {
 					<div className="mb-3 font-semibold text-[#92400e] text-[11px] uppercase tracking-[0.15em]">
 						Current
 					</div>
-					<pre className="overflow-auto rounded-lg bg-white/50 p-4 font-mono text-[#111] text-[12px] leading-relaxed ring-1 ring-[#f59e0b]/20">
+					<pre className="overflow-auto rounded-lg bg-white/50 p-6 font-mono text-[#111] text-[12px] leading-relaxed ring-1 ring-[#f59e0b]/20">
 						{JSON.stringify(shift.currentValue, null, 2)}
 					</pre>
 				</div>

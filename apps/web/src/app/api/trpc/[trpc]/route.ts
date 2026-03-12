@@ -3,6 +3,7 @@ import { withAuth } from "@workos-inc/authkit-nextjs";
 import type { NextRequest } from "next/server";
 import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
+import { wrapHandler } from "~/server/strus";
 
 const createContext = async (req: NextRequest) => {
 	const { user } = await withAuth();
@@ -13,12 +14,12 @@ const createContext = async (req: NextRequest) => {
 	});
 };
 
-const handler = (req: NextRequest) =>
+const handler = wrapHandler((req) =>
 	fetchRequestHandler({
 		endpoint: "/api/trpc",
 		req,
 		router: appRouter,
-		createContext: () => createContext(req),
+		createContext: () => createContext(req as NextRequest),
 		onError:
 			process.env.NODE_ENV === "development"
 				? ({ path, error }) => {
@@ -27,6 +28,7 @@ const handler = (req: NextRequest) =>
 						);
 					}
 				: undefined,
-	});
+	}),
+);
 
 export { handler as GET, handler as POST };

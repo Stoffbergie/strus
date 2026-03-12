@@ -1,4 +1,5 @@
 import Header from "~/app/_components/header";
+import OnboardingGate from "~/app/_components/onboarding-gate";
 
 export default function DashboardLayout({
 	children,
@@ -6,9 +7,11 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="min-h-svh bg-white">
-			<Header />
-			<main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
-		</div>
+		<OnboardingGate>
+			<div className="min-h-svh bg-white">
+				<Header />
+				<main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
+			</div>
+		</OnboardingGate>
 	);
 }

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import SetupGuide from "~/app/_components/setup-guide";
 import SignalBadge from "~/app/_components/signal-badge";
 import { api } from "~/trpc/react";
 
@@ -15,23 +14,9 @@ export default function ChangesPage() {
 		limit: 50,
 	});
 
-	const { data: endpoints, isLoading: endpointsLoading } =
-		api.endpoints.list.useQuery();
-
-	const { data: apiKeys } = api.apiKeys.list.useQuery();
+	const { data: endpoints } = api.endpoints.list.useQuery();
 
 	const endpointCount = endpoints?.length ?? 0;
-	const hasNoData = !endpointsLoading && endpointCount === 0;
-	const latestKey = apiKeys?.[0];
-
-	if (hasNoData) {
-		return (
-			<SetupGuide
-				apiKey={latestKey?.keyPrefix ? `${latestKey.keyPrefix}...` : undefined}
-			/>
-		);
-	}
-
 	const activeCount = shifts?.filter((s) => !s.resolvedAt).length ?? 0;
 
 	return (

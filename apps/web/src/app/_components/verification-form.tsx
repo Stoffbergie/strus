@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@strus/ui/components/button";
+import { Textarea } from "@strus/ui/components/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -40,30 +42,30 @@ export default function VerificationForm({
 			<p className="mb-4 text-[#999] text-[13px]">
 				Verify whether this behavioral change was expected.
 			</p>
-			<textarea
-				className="w-full rounded-lg border border-[#e0e0e0] bg-white px-4 py-3 text-[#111] text-[13px] outline-none transition-colors placeholder:text-[#bbb] focus:border-[#111]"
+			<Textarea
+				className="text-[13px]"
 				placeholder="Optional note..."
 				rows={2}
 				value={note}
 				onChange={(e) => setNote(e.target.value)}
 			/>
 			<div className="mt-3 flex gap-2">
-				<button
-					type="button"
-					disabled={verify.isPending}
+				<Button
+					variant="outline"
+					className="flex-1"
+					loading={verify.isPending}
 					onClick={() => handleVerdict("intended")}
-					className="flex-1 rounded-lg border border-[#e8e8e8] bg-white px-4 py-2.5 font-semibold text-[#111] text-[13px] transition-colors hover:bg-[#fafafa] disabled:opacity-50"
 				>
 					Intended
-				</button>
-				<button
-					type="button"
-					disabled={verify.isPending}
+				</Button>
+				<Button
+					variant="destructive"
+					className="flex-1"
+					loading={verify.isPending}
 					onClick={() => handleVerdict("unintended")}
-					className="flex-1 rounded-lg bg-[#dc2626] px-4 py-2.5 font-semibold text-[13px] text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-50"
 				>
 					Unintended
-				</button>
+				</Button>
 			</div>
 		</div>
 	);

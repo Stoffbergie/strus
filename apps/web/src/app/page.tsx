@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@strus/ui/components/button";
+import { Input } from "@strus/ui/components/input";
+import { Textarea } from "@strus/ui/components/textarea";
 import { type FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -64,7 +67,7 @@ function PayloadCard({
 				</span>
 				<span className="font-mono text-[#bbb] text-[11px]">{endpoint}</span>
 			</div>
-			<div className="p-4 font-mono text-[12px] leading-relaxed">
+			<div className="p-6 font-mono text-[12px] leading-relaxed">
 				<div className="text-[#999]">{"{"}</div>
 				{fields.map((field, i) => (
 					<div key={field.name} className="ml-4 flex items-center gap-1">
@@ -576,43 +579,40 @@ export default function LandingPage() {
 							catch.
 						</div>
 						<form className="grid gap-4" onSubmit={handleSubmit}>
-							<input
-								className="rounded-lg border border-[#e0e0e0] bg-white px-4 py-3 text-[#111] text-sm outline-none transition-colors placeholder:text-[#bbb] focus:border-[#111]"
+							<Input
 								type="text"
 								name="name"
 								placeholder="Name"
 								required
 								aria-label="Name"
 							/>
-							<input
-								className="rounded-lg border border-[#e0e0e0] bg-white px-4 py-3 text-[#111] text-sm outline-none transition-colors placeholder:text-[#bbb] focus:border-[#111]"
+							<Input
 								type="email"
 								name="email"
 								placeholder="Work email"
 								required
 								aria-label="Work email"
 							/>
-							<input
-								className="rounded-lg border border-[#e0e0e0] bg-white px-4 py-3 text-[#111] text-sm outline-none transition-colors placeholder:text-[#bbb] focus:border-[#111]"
+							<Input
 								type="text"
 								name="company"
 								placeholder="Company"
 								required
 								aria-label="Company"
 							/>
-							<textarea
-								className="min-h-20 resize-y rounded-lg border border-[#e0e0e0] bg-white px-4 py-3 text-[#111] text-sm outline-none transition-colors placeholder:text-[#bbb] focus:border-[#111]"
+							<Textarea
+								className="min-h-20 resize-y"
 								name="message"
 								placeholder="Anything we should know? (optional)"
 								aria-label="Additional context"
 							/>
-							<button
+							<Button
 								type="submit"
-								disabled={submitContact.isPending}
-								className="justify-self-start rounded-lg bg-[#111] px-5 py-2.5 font-medium text-sm text-white transition-colors hover:bg-[#333] disabled:opacity-50"
+								loading={submitContact.isPending}
+								className="justify-self-start"
 							>
-								{submitContact.isPending ? "Sending..." : "Send"}
-							</button>
+								Send
+							</Button>
 						</form>
 					</>
 				)}

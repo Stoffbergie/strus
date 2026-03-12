@@ -3,6 +3,7 @@ import { apiKey, endpoint, telemetryEvent } from "@strus/db/schema/index";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { wrapHandler } from "~/server/strus";
 
 const eventSchema = z.object({
 	endpointId: z.string(),
@@ -23,7 +24,7 @@ async function hashKey(raw: string): Promise<string> {
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function POST(req: NextRequest) {
+export const POST = wrapHandler(async (req) => {
 	const authHeader = req.headers.get("authorization");
 	const rawKey = authHeader?.startsWith("Bearer ")
 		? authHeader.slice(7)
@@ -111,4 +112,4 @@ export async function POST(req: NextRequest) {
 		.onConflictDoNothing({ target: telemetryEvent.idempotencyKey });
 
 	return NextResponse.json({ ingested: rows.length });
-}
+});

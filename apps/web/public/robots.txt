@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /changes
+Disallow: /monitoring
+Disallow: /settings
+
+Sitemap: https://strus.io/sitemap.xml

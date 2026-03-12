@@ -1,9 +1,10 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
+import { Spinner } from "@strus/ui/components/spinner";
 import { cn } from "@strus/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
-	"group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-clip-padding font-medium text-xs outline-none transition-all focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+	"group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-clip-padding font-medium text-xs outline-none transition-all focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
 	{
 		variants: {
 			variant: {
@@ -16,6 +17,8 @@ const buttonVariants = cva(
 					"hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
 				destructive:
 					"bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 dark:hover:bg-destructive/30",
+				"destructive-ghost":
+					"text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
@@ -32,23 +35,51 @@ const buttonVariants = cva(
 		},
 		defaultVariants: {
 			variant: "default",
-			size: "default",
+			size: "lg",
 		},
 	},
 );
 
+const disabledClasses =
+	"pointer-events-none border-border bg-muted text-muted-foreground";
+
 function Button({
 	className,
 	variant = "default",
-	size = "default",
+	size = "lg",
+	loading = false,
+	disabled = false,
+	children,
 	...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props &
+	VariantProps<typeof buttonVariants> & {
+		loading?: boolean;
+	}) {
+	const isInactive = loading || disabled;
+
+	const isIconSize = size?.toString().startsWith("icon");
+
 	return (
 		<ButtonPrimitive
 			data-slot="button"
-			className={cn(buttonVariants({ variant, size, className }))}
+			disabled={isInactive}
+			aria-busy={loading || undefined}
+			className={cn(
+				buttonVariants({ variant, size }),
+				isInactive && disabledClasses,
+				className,
+			)}
 			{...props}
-		/>
+		>
+			{loading ? (
+				<>
+					<Spinner />
+					{!isIconSize && children}
+				</>
+			) : (
+				children
+			)}
+		</ButtonPrimitive>
 	);
 }
 
