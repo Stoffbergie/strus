@@ -1,12 +1,19 @@
 import { relations } from "drizzle-orm";
-import { integer, jsonb, real, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	integer,
+	jsonb,
+	primaryKey,
+	real,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
 import { endpoint } from "./endpoints";
-import { pgIndex, pgTable } from "./helpers";
+import { pgIndex, pgTable, pgUniqueIndex } from "./helpers";
 
 export const telemetryEvent = pgTable(
 	"telemetry_event",
 	{
-		id: text("id").primaryKey(),
+		id: text("id").notNull(),
 		endpointId: text("endpoint_id")
 			.notNull()
 			.references(() => endpoint.id, { onDelete: "cascade" }),
@@ -16,16 +23,20 @@ export const telemetryEvent = pgTable(
 		responseBody: jsonb("response_body"),
 		requestBody: jsonb("request_body"),
 		metadata: jsonb("metadata"),
-		idempotencyKey: text("idempotency_key").unique(),
+		idempotencyKey: text("idempotency_key"),
 		receivedAt: timestamp("received_at").defaultNow().notNull(),
 	},
 	(table) => [
+		primaryKey({ columns: [table.id, table.receivedAt] }),
+		pgUniqueIndex("telemetry_event_idempotency_key_unique").on(
+			table.idempotencyKey,
+			table.receivedAt,
+		),
 		pgIndex("telemetry_event_userId_endpointId_receivedAt_idx").on(
 			table.userId,
 			table.endpointId,
 			table.receivedAt,
 		),
-		pgIndex("telemetry_event_receivedAt_idx").on(table.receivedAt),
 	],
 );
 

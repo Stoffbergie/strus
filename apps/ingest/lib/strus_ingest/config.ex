@@ -24,7 +24,8 @@ defmodule StrusIngest.Config do
       username: uri.userinfo && String.split(uri.userinfo, ":") |> List.first(),
       password: uri.userinfo && String.split(uri.userinfo, ":") |> List.last(),
       database: String.trim_leading(uri.path || "/strus", "/"),
-      pool_size: pool_size()
+      pool_size: pool_size(),
+      prepare: :unnamed
     ]
 
     if ssl? do

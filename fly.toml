@@ -8,7 +8,7 @@ primary_region = "iad"
   PORT = "8080"
   BUFFER_FLUSH_MS = "1000"
   BUFFER_MAX_SIZE = "500"
-  DB_POOL_SIZE = "5"
+  DB_POOL_SIZE = "20"
 
 [http_service]
   internal_port = 8080

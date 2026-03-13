@@ -12,8 +12,9 @@ defmodule StrusIngest.Router do
          {:ok, user_id} <- StrusIngest.Auth.verify_key(raw_key, StrusIngest.Config.hmac_secret()),
          encoding <- get_req_header(conn, "content-encoding") |> List.first(),
          {:ok, events} <- StrusIngest.Parser.parse(body, encoding) do
-      StrusIngest.Buffer.push(user_id, events)
-      send_json(conn, 202, %{accepted: length(events)})
+      normalized = Enum.flat_map(events, &StrusIngest.RouteNormalizer.normalize/1)
+      StrusIngest.Buffer.push(user_id, normalized)
+      send_json(conn, 202, %{accepted: length(normalized)})
     else
       nil ->
         send_json(conn, 401, %{error: "Missing API key"})
