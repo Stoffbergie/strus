@@ -2,7 +2,10 @@ Mix.install([{:jason, "~> 1.4"}, {:req, "~> 0.5"}, {:finch, "~> 0.21"}])
 
 Finch.start_link(name: BenchFinch, pools: %{default: [size: 50, count: 2]})
 
-secret = "vhY/JFTFbnXpHVrRxNnIy5abGNJksmtUQS1jaZxX725LUEMgh3El7wAx7odQjQCL"
+secret =
+  System.get_env("HMAC_SECRET") ||
+    raise "HMAC_SECRET env var required. Export it or run: source apps/web/.env && elixir bench.exs"
+
 user_id = "bench_user_#{System.system_time(:millisecond)}"
 base_url = System.get_env("BENCH_URL", "https://strus-api.fly.dev")
 
