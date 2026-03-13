@@ -189,7 +189,13 @@ defmodule StrusIngest.Buffer do
     Postgrex.transaction(:strus_db, fn conn ->
       Postgrex.query!(
         conn,
-        "CREATE TEMP TABLE _strus_stage (LIKE strus_telemetry_event INCLUDING NOTHING) ON COMMIT DROP",
+        """
+          CREATE TEMP TABLE _strus_stage (
+            id text, endpoint_id text, user_id text, status_code integer,
+            duration_ms integer, response_body jsonb, request_body jsonb,
+            idempotency_key text, received_at timestamp, metadata jsonb
+          ) ON COMMIT DROP
+        """,
         []
       )
 
@@ -349,7 +355,7 @@ defmodule StrusIngest.Buffer do
         |> Enum.with_index()
         |> Enum.reduce({[], []}, fn {{id, count}, idx}, {ph_acc, val_acc} ->
           offset = idx * 2
-          ph = "($#{offset + 1}::uuid, $#{offset + 2}::integer)"
+          ph = "($#{offset + 1}::text, $#{offset + 2}::integer)"
           {ph_acc ++ [ph], val_acc ++ [id, count]}
         end)
 
