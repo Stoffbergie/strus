@@ -70,9 +70,8 @@ export function CreateDialog() {
 						</DialogHeader>
 
 						<div className="pt-6 pb-8">
-							<form.Field
-								name="name"
-								children={(field) => (
+							<form.Field name="name">
+								{(field) => (
 									<Field>
 										<FieldLabel htmlFor={field.name}>API key name</FieldLabel>
 										<Input
@@ -94,7 +93,7 @@ export function CreateDialog() {
 											)}
 									</Field>
 								)}
-							/>
+							</form.Field>
 						</div>
 
 						<DialogFooter>
@@ -107,7 +106,8 @@ export function CreateDialog() {
 							</Button>
 							<form.Subscribe
 								selector={(state) => [state.canSubmit, state.isSubmitting]}
-								children={([canSubmit, isSubmitting]) => (
+							>
+								{([canSubmit, isSubmitting]) => (
 									<Button
 										type="submit"
 										loading={isSubmitting || create.isPending}
@@ -116,7 +116,7 @@ export function CreateDialog() {
 										Create key
 									</Button>
 								)}
-							/>
+							</form.Subscribe>
 						</DialogFooter>
 					</form>
 				</DialogContent>

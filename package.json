@@ -16,10 +16,15 @@
 		"db:studio": "turbo -F @strus/db db:studio",
 		"db:generate": "turbo -F @strus/db db:generate",
 		"db:migrate": "turbo -F @strus/db db:migrate",
-		"clean": "rm -rf apps/web/.next"
+		"clean": "rm -rf apps/web/.next",
+		"lint": "biome check .",
+		"typecheck": "turbo check-types --concurrency=2",
+		"doctor": "react-doctor --no-score --blocking error --category Bugs --category Security --category Accessibility --yes",
+		"ci": "bun run lint && bun run typecheck && bun run doctor && turbo build --concurrency=2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.0",
+		"react-doctor": "^0.5.6",
 		"turbo": "^2.8.12",
 		"typescript": "^5"
 	},

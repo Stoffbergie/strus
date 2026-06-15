@@ -7,11 +7,10 @@ import { cn } from "@strus/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
-function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
+function InputGroup({ className, ...props }: React.ComponentProps<"fieldset">) {
 	return (
-		<div
+		<fieldset
 			data-slot="input-group"
-			role="group"
 			className={cn(
 				"group/input-group relative flex w-full min-w-0 items-center rounded-lg border border-[#e0e0e0] bg-white outline-none transition-colors has-disabled:pointer-events-none has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-start]]:h-auto has-[>textarea]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:flex-col has-[[data-slot=input-group-control]:focus-visible]:border-[#111] has-[[data-slot][aria-invalid=true]]:border-destructive has-disabled:opacity-50 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
 				className,
@@ -46,10 +45,15 @@ function InputGroupAddon({
 	className,
 	align = "inline-start",
 	...props
-}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
+}: React.ComponentProps<"button"> &
+	VariantProps<typeof inputGroupAddonVariants>) {
+	function focusInput(element: HTMLElement) {
+		element.parentElement?.querySelector("input")?.focus();
+	}
+
 	return (
-		<div
-			role="group"
+		<button
+			type="button"
 			data-slot="input-group-addon"
 			data-align={align}
 			className={cn(inputGroupAddonVariants({ align }), className)}
@@ -57,7 +61,13 @@ function InputGroupAddon({
 				if ((e.target as HTMLElement).closest("button")) {
 					return;
 				}
-				e.currentTarget.parentElement?.querySelector("input")?.focus();
+				focusInput(e.currentTarget);
+			}}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					focusInput(e.currentTarget);
+				}
 			}}
 			{...props}
 		/>

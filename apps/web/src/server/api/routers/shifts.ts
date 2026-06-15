@@ -47,8 +47,7 @@ export const shiftsRouter = createTRPCRouter({
 				.where(eq(shift.id, input.id))
 				.limit(1);
 
-			if (rows.length === 0) return null;
-			return rows[0]!;
+			return rows[0] ?? null;
 		}),
 
 	verify: protectedProcedure

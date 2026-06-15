@@ -22,9 +22,9 @@ export function median(values: number[]): number {
 	const sorted = [...values].sort((a, b) => a - b);
 	const mid = Math.floor(sorted.length / 2);
 	if (sorted.length % 2 === 0) {
-		return (sorted[mid - 1]! + sorted[mid]!) / 2;
+		return ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
 	}
-	return sorted[mid]!;
+	return sorted[mid] ?? 0;
 }
 
 export function percentile(values: number[], p: number): number {
@@ -33,7 +33,7 @@ export function percentile(values: number[], p: number): number {
 	const idx = (p / 100) * (sorted.length - 1);
 	const lower = Math.floor(idx);
 	const upper = Math.ceil(idx);
-	if (lower === upper) return sorted[lower]!;
+	if (lower === upper) return sorted[lower] ?? 0;
 	const weight = idx - lower;
-	return sorted[lower]! * (1 - weight) + sorted[upper]! * weight;
+	return (sorted[lower] ?? 0) * (1 - weight) + (sorted[upper] ?? 0) * weight;
 }

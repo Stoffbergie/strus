@@ -1,57 +1,46 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
-  "globalPassThroughEnv": [
-    "NODE_ENV",
-    "DATABASE_URL",
-    "WORKOS_API_KEY",
-    "WORKOS_CLIENT_ID",
-    "WORKOS_COOKIE_PASSWORD",
-    "WORKOS_REDIRECT_URI",
-    "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
-    "RESEND_API_KEY",
-    "STRUS_API_KEY",
-    "CONTACT_EMAIL",
-    "SKIP_ENV_VALIDATION",
-    "HMAC_SECRET"
-  ],
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
-    },
-    "check-types": {
-      "dependsOn": [
-        "^check-types"
-      ]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:push": {
-      "cache": false
-    },
-    "db:generate": {
-      "cache": false
-    },
-    "db:migrate": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:studio": {
-      "cache": false,
-      "persistent": true
-    }
-  }
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+	"globalPassThroughEnv": [
+		"NODE_ENV",
+		"DATABASE_URL",
+		"WORKOS_API_KEY",
+		"WORKOS_CLIENT_ID",
+		"WORKOS_COOKIE_PASSWORD",
+		"WORKOS_REDIRECT_URI",
+		"NEXT_PUBLIC_WORKOS_REDIRECT_URI",
+		"RESEND_API_KEY",
+		"STRUS_API_KEY",
+		"CONTACT_EMAIL",
+		"SKIP_ENV_VALIDATION",
+		"HMAC_SECRET"
+	],
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*"],
+			"outputs": [".next/**", "!.next/cache/**", "dist/**"]
+		},
+		"check-types": {
+			"dependsOn": ["^check-types"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"db:push": {
+			"cache": false
+		},
+		"db:generate": {
+			"cache": false
+		},
+		"db:migrate": {
+			"cache": false,
+			"persistent": true
+		},
+		"db:studio": {
+			"cache": false,
+			"persistent": true
+		}
+	}
 }

@@ -3,7 +3,7 @@
 import { Delete02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@strus/ui/components/button";
-import { createColumnHelper } from "@tanstack/react-table";
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -42,7 +42,7 @@ const columns = [
 		header: () => <span className="sr-only">Actions</span>,
 		cell: ({ row }) => <DeleteButton keyId={row.original.id} />,
 	}),
-];
+] as unknown as ColumnDef<ApiKey, unknown>[];
 
 export function KeyListSkeleton() {
 	return <DataTableSkeleton columns={columns} rows={3} />;

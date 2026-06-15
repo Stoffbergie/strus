@@ -41,7 +41,7 @@ export function bucketEvents(
 				windowMinutes *
 				60_000,
 		);
-		const key = `${event.endpointId}:${event.userId}:${windowStart.toISOString()}`;
+		const key = `${event.endpointId}|${event.userId}|${windowStart.toISOString()}`;
 		const bucket = buckets.get(key) || [];
 		bucket.push(event);
 		buckets.set(key, bucket);
@@ -50,8 +50,10 @@ export function bucketEvents(
 	const aggregates: Aggregate[] = [];
 
 	for (const [key, bucketEvents] of buckets) {
-		const [endpointId, userId, windowStartStr] = key.split(":");
-		const windowStart = new Date(windowStartStr!);
+		const [endpointId, userId, windowStartStr] = key.split("|");
+		if (!endpointId || !userId || !windowStartStr) continue;
+
+		const windowStart = new Date(windowStartStr);
 		const windowEnd = new Date(windowStart.getTime() + windowMinutes * 60_000);
 
 		const eventCount = bucketEvents.length;
@@ -64,8 +66,8 @@ export function bucketEvents(
 
 		aggregates.push({
 			id: `agg_${key}`,
-			endpointId: endpointId!,
-			userId: userId!,
+			endpointId,
+			userId,
 			windowStart,
 			windowEnd,
 			eventCount,

@@ -1,8 +1,10 @@
 function klDivergence(p: number[], q: number[]): number {
 	let sum = 0;
 	for (let i = 0; i < p.length; i++) {
-		if (p[i]! > 0 && q[i]! > 0) {
-			sum += p[i]! * Math.log2(p[i]! / q[i]!);
+		const pValue = p[i] ?? 0;
+		const qValue = q[i] ?? 0;
+		if (pValue > 0 && qValue > 0) {
+			sum += pValue * Math.log2(pValue / qValue);
 		}
 	}
 	return sum;

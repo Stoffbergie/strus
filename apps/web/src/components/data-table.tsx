@@ -28,18 +28,17 @@ function alignClass(column: Column<unknown, unknown>) {
 	return column.columnDef.meta?.align === "right" ? "text-right" : undefined;
 }
 
-interface DataTableProps<TData> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	columns: ColumnDef<TData, any>[];
+interface DataTableProps<TData, TValue> {
+	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	onRowClick?: (row: TData) => void;
 }
 
-export function DataTable<TData>({
+export function DataTable<TData, TValue>({
 	columns,
 	data,
 	onRowClick,
-}: DataTableProps<TData>) {
+}: DataTableProps<TData, TValue>) {
 	const table = useReactTable({
 		data,
 		columns,
@@ -102,16 +101,15 @@ export function DataTable<TData>({
 	);
 }
 
-interface DataTableSkeletonProps<TData> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	columns: ColumnDef<TData, any>[];
+interface DataTableSkeletonProps<TData, TValue> {
+	columns: ColumnDef<TData, TValue>[];
 	rows?: number;
 }
 
-export function DataTableSkeleton<TData>({
+export function DataTableSkeleton<TData, TValue>({
 	columns,
 	rows = 3,
-}: DataTableSkeletonProps<TData>) {
+}: DataTableSkeletonProps<TData, TValue>) {
 	const table = useReactTable({
 		data: [],
 		columns,

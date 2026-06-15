@@ -6,85 +6,85 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #111111;
-  --card: #fafafa;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #111111;
-  --primary-foreground: #ffffff;
-  --secondary: #fafafa;
-  --secondary-foreground: #111111;
-  --muted: #fafafa;
-  --muted-foreground: #999999;
-  --accent: #fafafa;
-  --accent-foreground: #111111;
-  --destructive: #dc2626;
-  --border: #e8e8e8;
-  --input: #e0e0e0;
-  --ring: #111111;
-  --radius: 0.4rem;
+	--background: #ffffff;
+	--foreground: #111111;
+	--card: #fafafa;
+	--card-foreground: #111111;
+	--popover: #ffffff;
+	--popover-foreground: #111111;
+	--primary: #111111;
+	--primary-foreground: #ffffff;
+	--secondary: #fafafa;
+	--secondary-foreground: #111111;
+	--muted: #fafafa;
+	--muted-foreground: #999999;
+	--accent: #fafafa;
+	--accent-foreground: #111111;
+	--destructive: #dc2626;
+	--border: #e8e8e8;
+	--input: #e0e0e0;
+	--ring: #111111;
+	--radius: 0.4rem;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #141414;
-  --card-foreground: #fafafa;
-  --popover: #141414;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #fafafa;
-  --muted: #1a1a1a;
-  --muted-foreground: #777777;
-  --accent: #1a1a1a;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #fafafa;
+	--background: #0a0a0a;
+	--foreground: #fafafa;
+	--card: #141414;
+	--card-foreground: #fafafa;
+	--popover: #141414;
+	--popover-foreground: #fafafa;
+	--primary: #fafafa;
+	--primary-foreground: #0a0a0a;
+	--secondary: #1a1a1a;
+	--secondary-foreground: #fafafa;
+	--muted: #1a1a1a;
+	--muted-foreground: #777777;
+	--accent: #1a1a1a;
+	--accent-foreground: #fafafa;
+	--destructive: #dc2626;
+	--border: #2a2a2a;
+	--input: #2a2a2a;
+	--ring: #fafafa;
 }
 
 @theme inline {
-  --font-sans: "Figtree", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+	--font-sans: "Figtree", sans-serif;
+	--font-mono: "JetBrains Mono", monospace;
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+	* {
+		@apply border-border outline-ring/50;
+	}
 
-  body {
-    @apply bg-background font-sans text-foreground;
-  }
+	body {
+		@apply bg-background font-sans text-foreground;
+	}
 
-  html {
-    @apply font-sans;
-  }
+	html {
+		@apply font-sans;
+	}
 }

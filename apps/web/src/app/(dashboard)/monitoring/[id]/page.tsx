@@ -122,7 +122,8 @@ function Histogram({
 		return `${mon} ${d.getDate()} ${hh}:${mm}`;
 	}
 
-	const firstBucket = buckets[0]!;
+	const firstBucket = buckets[0];
+	if (!firstBucket) return null;
 	const lastBucket = buckets[buckets.length - 1] ?? firstBucket;
 	const first = new Date(firstBucket.bucket);
 	const last = new Date(lastBucket.bucket);

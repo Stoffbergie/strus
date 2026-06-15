@@ -22,12 +22,11 @@ export const endpointsRouter = createTRPCRouter({
 			const conditions = [eq(endpoint.userId, ctx.userId)];
 
 			if (search) {
-				conditions.push(
-					or(
-						ilike(endpoint.routePattern, `%${search}%`),
-						ilike(endpoint.method, `%${search}%`),
-					)!,
+				const searchCondition = or(
+					ilike(endpoint.routePattern, `%${search}%`),
+					ilike(endpoint.method, `%${search}%`),
 				);
+				if (searchCondition) conditions.push(searchCondition);
 			}
 
 			if (input?.cursor) {
@@ -65,7 +64,6 @@ export const endpointsRouter = createTRPCRouter({
 				.where(eq(endpoint.id, input.id))
 				.limit(1);
 
-			if (rows.length === 0) return null;
-			return rows[0]!;
+			return rows[0] ?? null;
 		}),
 });

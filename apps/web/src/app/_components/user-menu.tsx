@@ -10,6 +10,7 @@ import {
 } from "@strus/ui/components/dropdown-menu";
 import { signOut } from "@workos-inc/authkit-nextjs";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import Image from "next/image";
 
 export default function UserMenu() {
 	const { user, loading } = useAuth();
@@ -48,10 +49,13 @@ export default function UserMenu() {
 						className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-[#e8e8e8] bg-[#fafafa] font-medium text-[#999] text-[11px] transition-colors hover:border-[#ccc] hover:text-[#666]"
 					>
 						{user.profilePictureUrl ? (
-							<img
+							<Image
 								src={user.profilePictureUrl}
 								alt=""
+								width={28}
+								height={28}
 								className="h-full w-full object-cover"
+								unoptimized
 								referrerPolicy="no-referrer"
 							/>
 						) : (
