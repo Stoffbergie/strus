@@ -33,3 +33,11 @@ jobs:
 
       - name: Build
         run: bunx turbo build --concurrency=2
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/strus
+          WORKOS_API_KEY: sk_test_placeholder
+          WORKOS_CLIENT_ID: client_placeholder
+          WORKOS_COOKIE_PASSWORD: 00000000000000000000000000000000
+          RESEND_API_KEY: re_placeholder
+          HMAC_SECRET: 00000000000000000000000000000000
+          NEXT_PUBLIC_WORKOS_REDIRECT_URI: http://localhost:3000/callback
