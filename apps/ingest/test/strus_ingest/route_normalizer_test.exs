@@ -179,6 +179,12 @@ defmodule StrusIngest.RouteNormalizerTest do
       assert normalized["r"] == "/api/users/{id}/posts/{id}"
     end
 
+    test "replaces zero numeric ID segments with {id}" do
+      event = Map.put(@base_event, "r", "/api/users/0")
+      assert [normalized] = RouteNormalizer.normalize(event)
+      assert normalized["r"] == "/api/users/{id}"
+    end
+
     test "does not replace short text segments" do
       event = Map.put(@base_event, "r", "/api/screenshots/cas")
       assert [normalized] = RouteNormalizer.normalize(event)
